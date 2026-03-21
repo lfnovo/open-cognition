@@ -1,0 +1,3 @@
+DEFINE INDEX idx_flashcard_due_date ON flashcard FIELDS due_date;
+DEFINE INDEX idx_review_log_flashcard ON review_log FIELDS flashcard_id;
+DEFINE INDEX idx_review_log_reviewed_at ON review_log FIELDS reviewed_at;

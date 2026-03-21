@@ -1,0 +1,13 @@
+DEFINE TABLE session_log SCHEMAFULL;
+DEFINE FIELD topic_id ON session_log TYPE string ASSERT $value != NONE;
+DEFINE FIELD topic_name ON session_log TYPE string ASSERT $value != NONE;
+DEFINE FIELD session_type ON session_log TYPE string ASSERT $value INSIDE ['study', 'feynman', 'review', 'import'];
+DEFINE FIELD summary ON session_log TYPE option<string>;
+DEFINE FIELD flashcards_created ON session_log TYPE option<int> DEFAULT 0;
+DEFINE FIELD artifacts_created ON session_log TYPE option<int> DEFAULT 0;
+DEFINE FIELD resources_created ON session_log TYPE option<int> DEFAULT 0;
+DEFINE FIELD created ON session_log TYPE option<datetime>;
+DEFINE FIELD updated ON session_log TYPE option<datetime>;
+
+DEFINE INDEX idx_session_log_topic ON session_log FIELDS topic_id;
+DEFINE INDEX idx_session_log_created ON session_log FIELDS created;

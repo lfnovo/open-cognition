@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Revisão — open-cognition{% endblock %}
+{% block content %}
+<div class="mb-6">
+    {% if topic %}
+    <a href="/topics/{{ topic.id }}" class="text-sm text-gray-400 hover:text-gray-600">&larr; {{ topic.name }}</a>
+    {% else %}
+    <a href="/" class="text-sm text-gray-400 hover:text-gray-600">&larr; Dashboard</a>
+    {% endif %}
+    <h1 class="text-2xl font-bold mt-2">Sessão de Revisão</h1>
+    <p class="text-gray-500">{{ total }} cards para revisar</p>
+</div>
+
+{% if cards %}
+<div class="flex gap-6">
+    <!-- Main review area -->
+    <div class="flex-1">
+        <div id="review-container">
+            <div id="card-area" class="mb-6">
+                <!-- Card -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 min-h-[200px] flex flex-col justify-center">
+                    <div class="text-center">
+                        <div class="flex justify-center items-center gap-2 mb-4">
+                            <p class="text-xs text-gray-400">Card {{ current + 1 }} de {{ total }}</p>
+                            <button id="card-id-btn" onclick="copyId('flashcard:' + cards[currentIndex].id, this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">flashcard:{{ cards[0].id[:8] }}...</button>
+                        </div>
+                        <p id="card-front" class="text-lg font-medium">{{ cards[0].front }}</p>
+                        <div id="card-back" class="hidden mt-6">
+                            <hr class="my-4 border-gray-200">
+                            <p class="text-gray-600">{{ cards[0].back }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reveal button -->
+                <div id="reveal-btn" class="text-center mt-4">
+                    <button onclick="revealAnswer()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition text-sm">
+                        Mostrar resposta
+                    </button>
+                </div>
+
+                <!-- Quality buttons (hidden until reveal) -->
+                <div id="quality-buttons" class="hidden mt-4">
+                    <p class="text-center text-sm text-gray-500 mb-3">Como foi?</p>
+                    <div class="flex justify-center gap-2">
+                        <button onclick="submitReview(0)" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition">
+                            Esqueci (0)
+                        </button>
+                        <button onclick="submitReview(2)" class="px-4 py-2 rounded-lg text-sm font-medium bg-orange-100 text-orange-700 hover:bg-orange-200 transition">
+                            Errei (2)
+                        </button>
+                        <button onclick="submitReview(3)" class="px-4 py-2 rounded-lg text-sm font-medium bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
+                            Difícil (3)
+                        </button>
+                        <button onclick="submitReview(4)" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
+                            Ok (4)
+                        </button>
+                        <button onclick="submitReview(5)" class="px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-700 hover:bg-green-200 transition">
+                            Fácil (5)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resources hint (shown on incorrect) -->
+                <div id="resources-hint" class="hidden mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <p class="text-sm font-medium text-amber-800 mb-2">Recursos de apoio:</p>
+                    <div id="resources-list" class="text-sm text-amber-700"></div>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="bg-indigo-600 h-2 rounded-full transition-all" style="width: {{ (current / total * 100) if total > 0 else 0 }}%"></div>
+            </div>
+
+            <!-- Doubt button (below progress bar) -->
+            <div id="doubt-area" class="hidden mt-4">
+                <button id="doubt-toggle" onclick="toggleDoubtForm()" class="text-sm text-amber-600 hover:text-amber-800 transition">
+                    Tenho uma dúvida sobre isso
+                </button>
+                <div id="doubt-form" class="hidden mt-2">
+                    <textarea id="doubt-content" rows="2" placeholder="Qual é a sua dúvida?"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"></textarea>
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="submitDoubt()" class="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-amber-600 transition">
+                            Salvar dúvida
+                        </button>
+                        <button onclick="toggleDoubtForm()" class="text-gray-400 text-sm hover:text-gray-600">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+                <p id="doubt-saved" class="hidden text-sm text-green-600 mt-2">Dúvida salva!</p>
+            </div>
+        </div>
+
+        <!-- Review complete -->
+        <div id="review-complete" class="hidden text-center py-12">
+            <h2 class="text-xl font-bold mb-2">Sessão completa!</h2>
+            <div id="review-summary" class="text-gray-500 mb-6"></div>
+            <a href="/" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition text-sm">
+                Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Artifacts sidebar (rendered by JS per card) -->
+    <div id="artifacts-sidebar" class="w-80 flex-shrink-0">
+        <h3 class="text-sm font-semibold text-gray-500 mb-3">Artefatos do tópico</h3>
+        <div id="artifacts-list" class="space-y-3"></div>
+    </div>
+</div>
+
+<script>
+const cards = {{ cards_json | safe }};
+let currentIndex = 0;
+let results = [];
+
+function renderArtifactsSidebar() {
+    const card = cards[currentIndex];
+    const arts = card.artifacts || [];
+    const list = document.getElementById('artifacts-list');
+    const sidebar = document.getElementById('artifacts-sidebar');
+
+    if (arts.length === 0) {
+        sidebar.classList.add('hidden');
+        return;
+    }
+    sidebar.classList.remove('hidden');
+
+    list.innerHTML = arts.map(a => `
+        <button onclick="openArtifactModal('${a.type}', '${a.title.replace(/'/g, "\\'")}', this.getAttribute('data-content'))"
+                data-content="${(a.content || '').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"
+                class="w-full text-left bg-white rounded-lg border border-gray-200 p-3 hover:border-indigo-300 transition cursor-pointer">
+            <div class="flex items-center gap-1 mb-1">
+                <span class="text-xs uppercase bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">${a.type}</span>
+                <span class="text-sm font-medium">${a.title}</span>
+            </div>
+            <p class="text-xs text-indigo-600">Ver conteúdo</p>
+        </button>
+    `).join('');
+}
+
+// Render initial artifacts
+renderArtifactsSidebar();
+
+function revealAnswer() {
+    document.getElementById('card-back').classList.remove('hidden');
+    document.getElementById('reveal-btn').classList.add('hidden');
+    document.getElementById('quality-buttons').classList.remove('hidden');
+    document.getElementById('doubt-area').classList.remove('hidden');
+}
+
+function toggleDoubtForm() {
+    document.getElementById('doubt-form').classList.toggle('hidden');
+    document.getElementById('doubt-toggle').classList.toggle('hidden');
+    document.getElementById('doubt-saved').classList.add('hidden');
+}
+
+async function submitDoubt() {
+    const content = document.getElementById('doubt-content').value.trim();
+    if (!content) return;
+    const card = cards[currentIndex];
+    try {
+        await fetch('/api/doubts', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: content, flashcard_id: card.id})
+        });
+        document.getElementById('doubt-form').classList.add('hidden');
+        document.getElementById('doubt-toggle').classList.add('hidden');
+        document.getElementById('doubt-saved').classList.remove('hidden');
+        document.getElementById('doubt-content').value = '';
+    } catch(e) {
+        console.error('Failed to save doubt:', e);
+    }
+}
+
+async function submitReview(quality) {
+    const card = cards[currentIndex];
+
+    try {
+        const resp = await fetch(`/api/flashcards/${card.id}/review`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({quality: quality})
+        });
+        const data = await resp.json();
+        results.push({card: card, quality: quality, data: data});
+
+        // Show resources on incorrect answer
+        if (quality < 3 && card.resources && card.resources.length > 0) {
+            const resList = document.getElementById('resources-list');
+            resList.innerHTML = card.resources.map(r =>
+                `<a href="${r.content_or_url}" target="_blank" class="block hover:underline">[${r.type}] ${r.title}</a>`
+            ).join('');
+            document.getElementById('resources-hint').classList.remove('hidden');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+    } catch(e) {
+        console.error('Review failed:', e);
+    }
+
+    currentIndex++;
+
+    if (currentIndex >= cards.length) {
+        showComplete();
+        return;
+    }
+
+    // Next card
+    document.getElementById('card-id-btn').textContent = `flashcard:${cards[currentIndex].id.substring(0, 8)}...`;
+    document.getElementById('card-front').textContent = cards[currentIndex].front;
+    document.getElementById('card-back').innerHTML = `<hr class="my-4 border-gray-200"><p class="text-gray-600">${cards[currentIndex].back}</p>`;
+    document.getElementById('card-back').classList.add('hidden');
+    document.getElementById('reveal-btn').classList.remove('hidden');
+    document.getElementById('quality-buttons').classList.add('hidden');
+    document.getElementById('resources-hint').classList.add('hidden');
+    document.getElementById('doubt-area').classList.add('hidden');
+    document.getElementById('doubt-form').classList.add('hidden');
+    document.getElementById('doubt-toggle').classList.remove('hidden');
+    document.getElementById('doubt-saved').classList.add('hidden');
+    document.getElementById('doubt-content').value = '';
+    document.getElementById('progress-bar').style.width = `${(currentIndex / cards.length) * 100}%`;
+    document.querySelector('#card-area .text-xs').textContent = `Card ${currentIndex + 1} de ${cards.length}`;
+    renderArtifactsSidebar();
+}
+
+function showComplete() {
+    document.getElementById('review-container').classList.add('hidden');
+    document.getElementById('review-complete').classList.remove('hidden');
+
+    const correct = results.filter(r => r.quality >= 3).length;
+    const incorrect = results.filter(r => r.quality < 3).length;
+    document.getElementById('review-summary').innerHTML =
+        `<p>${correct} correto${correct !== 1 ? 's' : ''}, ${incorrect} errado${incorrect !== 1 ? 's' : ''}</p>`;
+}
+
+</script>
+
+{% else %}
+<div class="text-center py-12">
+    <p class="text-gray-400 text-lg">Nenhum card pendente de revisão!</p>
+    <a href="/" class="inline-block mt-4 text-indigo-600 hover:underline text-sm">Voltar ao Dashboard</a>
+</div>
+{% endif %}
+{% endblock %}

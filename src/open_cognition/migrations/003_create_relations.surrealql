@@ -1,0 +1,9 @@
+-- Graph edge tables for RELATE
+DEFINE TABLE has_subtopic SCHEMAFULL TYPE RELATION IN topic OUT topic;
+DEFINE FIELD created ON has_subtopic TYPE option<datetime>;
+
+DEFINE TABLE belongs_to SCHEMAFULL TYPE RELATION;
+DEFINE FIELD created ON belongs_to TYPE option<datetime>;
+
+DEFINE TABLE supports SCHEMAFULL TYPE RELATION IN resource OUT flashcard;
+DEFINE FIELD created ON supports TYPE option<datetime>;

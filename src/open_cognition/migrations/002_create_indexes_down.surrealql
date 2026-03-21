@@ -1,0 +1,3 @@
+REMOVE INDEX idx_flashcard_due_date ON flashcard;
+REMOVE INDEX idx_review_log_flashcard ON review_log;
+REMOVE INDEX idx_review_log_reviewed_at ON review_log;

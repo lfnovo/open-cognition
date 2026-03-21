@@ -1,0 +1,29 @@
+<div id="topics-list">
+{% for topic in topics %}
+<div class="bg-white rounded-lg border border-gray-200 p-4 mb-3">
+    <div class="flex justify-between items-start">
+        <div>
+            <div class="flex items-center gap-2">
+                <a href="/topics/{{ topic.id }}" class="font-medium text-indigo-600 hover:underline">{{ topic.name }}</a>
+                <button onclick="copyId('topic:{{ topic.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">topic:{{ topic.id[:8] }}...</button>
+            </div>
+            {% if topic.description %}
+            <p class="text-sm text-gray-500 mt-1">{{ topic.description }}</p>
+            {% endif %}
+        </div>
+        <a href="/topics/{{ topic.id }}/edit" class="text-xs text-gray-400 hover:text-gray-600">editar</a>
+    </div>
+    {% if topic.subtopics %}
+    <div class="ml-4 mt-2 border-l-2 border-gray-200 pl-3">
+        {% for s in topic.subtopics %}
+        <a href="/topics/{{ s.id }}" class="block text-sm text-gray-600 hover:text-indigo-600 py-0.5">{{ s.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% if not topics %}
+<p class="text-gray-400">Nenhum tópico criado ainda.</p>
+{% endif %}
+</div>
