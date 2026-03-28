@@ -53,9 +53,11 @@ async def end_session(
     - summary: brief description of what was covered
     - outputs: {flashcards: [...], resources: [...], artifacts: [...]}"""
     # Validate topic exists before creating any outputs
+    from surreal_basics import SurrealDBQueryError
+
     try:
         topic = await topic_service.get_topic(topic_id)
-    except Exception:
+    except (KeyError, IndexError, SurrealDBQueryError):
         return f"Error: topic '{topic_id}' not found. Cannot end session."
 
     outputs = outputs or {}

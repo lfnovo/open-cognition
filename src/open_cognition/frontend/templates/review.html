@@ -195,12 +195,21 @@ async function submitReview(quality) {
             const resList = document.getElementById('resources-list');
             resList.textContent = '';
             card.resources.forEach(r => {
-                const a = document.createElement('a');
-                a.href = r.content_or_url;
-                a.target = '_blank';
-                a.className = 'block hover:underline';
-                a.textContent = `[${r.type}] ${r.title}`;
-                resList.appendChild(a);
+                const url = r.content_or_url || '';
+                if (/^https?:\/\//i.test(url)) {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.className = 'block hover:underline';
+                    a.textContent = `[${r.type}] ${r.title}`;
+                    resList.appendChild(a);
+                } else {
+                    const span = document.createElement('span');
+                    span.className = 'block';
+                    span.textContent = `[${r.type}] ${r.title}`;
+                    resList.appendChild(span);
+                }
             });
             document.getElementById('resources-hint').classList.remove('hidden');
             await new Promise(resolve => setTimeout(resolve, 3000));
