@@ -14,4 +14,20 @@ import open_cognition.mcp.tools.topic_tools  # noqa: F401
 
 
 def run_mcp():
+    import asyncio
+
+    from loguru import logger
+    from surreal_basics.migrate import AsyncMigrationRunner
+
+    from open_cognition.config import ensure_data_dir, get_migrations_dir
+
+    async def _run_migrations():
+        ensure_data_dir()
+        migrations_dir = get_migrations_dir()
+        runner = AsyncMigrationRunner(migrations_dir)
+        applied = await runner.run_up()
+        for m in applied:
+            logger.info(f"Applied migration {m.version:03d}_{m.name}")
+
+    asyncio.run(_run_migrations())
     mcp.run()
