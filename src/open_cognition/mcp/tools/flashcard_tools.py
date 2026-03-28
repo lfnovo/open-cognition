@@ -53,6 +53,8 @@ async def create_flashcards_batch(cards: list[dict]) -> str:
     Each card should have: front, back, topic_ids, resource_ids (optional)."""
     created = []
     for c in cards:
+        if "resource_ids" not in c or c.get("resource_ids") is None:
+            c["resource_ids"] = []
         card = await flashcard_service.create_flashcard(FlashcardCreate(**c))
         created.append(card)
     return f"Created {len(created)} flashcards:\n" + "\n".join(
@@ -63,7 +65,7 @@ async def create_flashcards_batch(cards: list[dict]) -> str:
 @mcp.tool()
 async def review_flashcard(flashcard_id: str, quality: int) -> str:
     """Record a flashcard review and update spaced repetition schedule.
-    Quality scale: 0 (forgot completely), 2 (wrong), 3 (hard), 4 (ok), 5 (easy).
+    Quality scale: 0-5 where 0=forgot completely, 1=incorrect but recognized answer, 2=incorrect but seemed familiar, 3=correct with difficulty, 4=correct with hesitation, 5=perfect response. Scores below 3 count as incorrect and reset the card.
     Returns the updated schedule."""
     result = await review_service.review_flashcard(
         flashcard_id, ReviewRequest(quality=quality)

@@ -1,6 +1,6 @@
 # MCP Tools
 
-O open-cognition expõe 13 tools via MCP para integração com LLMs compatíveis (Claude Desktop, Claude Code, etc.).
+O open-cognition expõe 20 tools via MCP para integração com LLMs compatíveis (Claude Desktop, Claude Code, etc.).
 
 ## Como usar
 
@@ -82,6 +82,20 @@ Tipos: `pdf`, `video`, `link`, `markdown`.
 | `create_artifact(type, title, content, topic_ids)` | Cria artefato em markdown |
 
 Tipos: `summary`, `feynman`, `schema`, `notes`.
+
+### Dúvidas
+
+| Tool | Descrição |
+|------|-----------|
+| `get_doubts(topic_id?, status?)` | Lista dúvidas, filtro opcional por tópico e status |
+| `create_doubt(content, flashcard_id?, topic_id?)` | Cria uma dúvida |
+| `resolve_doubt(doubt_id)` | Marca dúvida como resolvida |
+
+### Struggling Cards
+
+| Tool | Descrição |
+|------|-----------|
+| `get_struggling_cards(topic_id?)` | Lista cards com baixo ease factor / muitos erros |
 
 ### Sessão de Estudo
 

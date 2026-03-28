@@ -58,6 +58,16 @@ Output estruturado gerado numa sessão de estudo. Sempre em markdown.
 - Associados ao tópico da sessão onde foram criados
 - Visualizáveis em modal com markdown renderizado na UI
 
+## Doubt
+
+A conceptual question the user wants to explore deeper. Can arise during card review or standalone.
+
+**Characteristics:**
+- Can be linked to a flashcard (when it arises during review) and/or a topic
+- Has status: `open` (pending) or `resolved` (worked through)
+- When linked to a card, the topic is inherited automatically
+- Open doubts are a natural entry point for study sessions
+
 ## Sessão
 
 Contexto efêmero de estudo. Tem um tópico de escopo e acontece numa conversa com o LLM.

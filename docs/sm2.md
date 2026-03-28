@@ -115,13 +115,15 @@ O EF é o que torna o sistema adaptativo por card:
 - **EF médio (2.5)**: card normal → crescimento padrão
 - **EF baixo (1.3-2.0)**: card difícil → intervalos crescem devagar → revisão frequente
 
-O EF mínimo de 1.3 garante que mesmo o card mais difícil eventualmente espaça as revisões (nunca fica preso em revisão diária permanente).
+O EF mínimo de 1.3 garante que os intervalos eventualmente crescem mesmo para os cards mais difíceis, porém cards consistentemente respondidos de forma incorreta (quality < 3) continuarão resetando para 1 dia.
 
 ## Implementação
 
 O algoritmo está em `src/open_cognition/services/sm2_service.py`:
 
 ```python
+from datetime import datetime, timedelta, timezone
+
 def calculate_sm2(quality, repetitions, ease_factor, interval) -> SM2Result:
     # Atualiza ease factor
     new_ef = ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
@@ -136,7 +138,7 @@ def calculate_sm2(quality, repetitions, ease_factor, interval) -> SM2Result:
         new_interval = 1
         new_repetitions = 0
 
-    due_date = now + timedelta(days=new_interval)
+    due_date = datetime.now(timezone.utc) + timedelta(days=new_interval)
     return SM2Result(new_interval, new_ef, new_repetitions, due_date)
 ```
 

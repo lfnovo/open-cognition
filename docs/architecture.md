@@ -118,7 +118,7 @@ open-cognition/
 
 ## IDs
 
-SurrealDB usa IDs no formato `table:id` (ex: `topic:abc123`). A API REST e a UI expõem apenas a parte `id` (ex: `abc123`). A conversão acontece em:
+SurrealDB usa IDs no formato `table:id` (ex: `topic:abc123`). A API REST expõe apenas a parte `id` (ex: `abc123`), mas a UI expõe o ID completo no estilo SurrealDB (ex: `topic:abc123`) para facilitar copy-paste para o LLM. A conversão acontece em:
 - **Repositories**: adicionam o prefixo `table:` ao receber IDs
 - **Services**: removem o prefixo com `strip_table_prefix()` ao retornar
 

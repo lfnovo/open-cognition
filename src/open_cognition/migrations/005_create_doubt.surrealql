@@ -9,3 +9,4 @@ DEFINE FIELD updated ON doubt TYPE option<datetime>;
 
 DEFINE INDEX idx_doubt_status ON doubt FIELDS status;
 DEFINE INDEX idx_doubt_topic ON doubt FIELDS topic_id;
+DEFINE INDEX idx_doubt_created ON doubt FIELDS created;

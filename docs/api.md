@@ -176,6 +176,8 @@ Atualiza tipo, título e/ou conteúdo.
 
 ### `GET /health`
 
+(Note: this endpoint is at the root, not under /api)
+
 Retorna status do server.
 
 ```json

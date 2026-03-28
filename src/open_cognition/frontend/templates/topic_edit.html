@@ -34,7 +34,7 @@
         <summary class="text-sm text-red-600 cursor-pointer font-medium">Zona perigosa</summary>
         <div class="mt-3">
             <p class="text-sm text-gray-500 mb-3">Apagar este tópico permanentemente. Flashcards, recursos e artefatos associados não serão apagados.</p>
-            <form method="post" action="/topics/{{ topic.id }}/delete" onsubmit="return confirm('Tem certeza que quer apagar o tópico &quot;{{ topic.name }}&quot;?')">
+            <form method="post" action="/topics/{{ topic.id }}/delete" data-name="{{ topic.name | e }}" onsubmit="return confirm('Tem certeza que quer apagar o tópico ' + this.dataset.name + '?')">
                 <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition">
                     Apagar tópico
                 </button>

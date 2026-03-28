@@ -64,7 +64,7 @@
                 <button onclick="copyId('resource:{{ res.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">resource:{{ res.id[:8] }}...</button>
             </div>
             {% if res.type in ['link', 'pdf', 'video'] %}
-            <a href="{{ res.content_or_url }}" target="_blank" class="text-xs text-indigo-600 hover:underline">abrir</a>
+            <a href="{{ res.content_or_url }}" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-600 hover:underline">abrir</a>
             {% endif %}
         </div>
         {% endfor %}
@@ -86,8 +86,8 @@
                 <span class="font-medium text-sm">{{ art.title }}</span>
                 <button onclick="copyId('artifact:{{ art.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">artifact:{{ art.id[:8] }}...</button>
             </div>
-            <button onclick="openArtifactModal('{{ art.type }}', '{{ art.title | e }}', this.getAttribute('data-content'))"
-                    data-content="{{ art.content | e }}"
+            <button onclick="openArtifactModal(this.dataset.type, this.dataset.title, this.dataset.content)"
+                    data-type="{{ art.type }}" data-title="{{ art.title | e }}" data-content="{{ art.content | e }}"
                     class="text-sm text-indigo-600 hover:underline cursor-pointer">
                 Ver conteúdo
             </button>

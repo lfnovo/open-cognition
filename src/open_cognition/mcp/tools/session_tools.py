@@ -52,29 +52,40 @@ async def end_session(
     - session_type: 'study', 'feynman', 'review', or 'import'
     - summary: brief description of what was covered
     - outputs: {flashcards: [...], resources: [...], artifacts: [...]}"""
+    # Validate topic exists before creating any outputs
+    try:
+        topic = await topic_service.get_topic(topic_id)
+    except Exception:
+        return f"Error: topic '{topic_id}' not found. Cannot end session."
+
     outputs = outputs or {}
     results = []
 
     fc_count = 0
     for fc in outputs.get("flashcards", []):
+        if "topic_ids" not in fc or not fc["topic_ids"]:
+            fc["topic_ids"] = [topic_id]
         card = await flashcard_service.create_flashcard(FlashcardCreate(**fc))
         results.append(f"Flashcard: {card.front}")
         fc_count += 1
 
     res_count = 0
     for res in outputs.get("resources", []):
+        if "topic_ids" not in res or not res["topic_ids"]:
+            res["topic_ids"] = [topic_id]
         r = await resource_service.create_resource(ResourceCreate(**res))
         results.append(f"Resource: {r.title}")
         res_count += 1
 
     art_count = 0
     for art in outputs.get("artifacts", []):
+        if "topic_ids" not in art or not art["topic_ids"]:
+            art["topic_ids"] = [topic_id]
         a = await artifact_service.create_artifact(ArtifactCreate(**art))
         results.append(f"Artifact: {a.title}")
         art_count += 1
 
     # Log the session
-    topic = await topic_service.get_topic(topic_id)
     log = await session_log_service.create_session_log(
         SessionLogCreate(
             topic_id=topic_id,

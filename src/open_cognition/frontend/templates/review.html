@@ -128,17 +128,19 @@ function renderArtifactsSidebar() {
     }
     sidebar.classList.remove('hidden');
 
-    list.innerHTML = arts.map(a => `
-        <button onclick="openArtifactModal('${a.type}', '${a.title.replace(/'/g, "\\'")}', this.getAttribute('data-content'))"
+    list.innerHTML = DOMPurify.sanitize(arts.map(a => `
+        <button onclick="openArtifactModal(this.dataset.type, this.dataset.title, this.dataset.content)"
+                data-type="${a.type}"
+                data-title="${(a.title || '').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"
                 data-content="${(a.content || '').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"
                 class="w-full text-left bg-white rounded-lg border border-gray-200 p-3 hover:border-indigo-300 transition cursor-pointer">
             <div class="flex items-center gap-1 mb-1">
-                <span class="text-xs uppercase bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">${a.type}</span>
-                <span class="text-sm font-medium">${a.title}</span>
+                <span class="text-xs uppercase bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">${(a.type || '').replace(/</g, '&lt;')}</span>
+                <span class="text-sm font-medium">${(a.title || '').replace(/</g, '&lt;')}</span>
             </div>
             <p class="text-xs text-indigo-600">Ver conteúdo</p>
         </button>
-    `).join('');
+    `).join(''));
 }
 
 // Render initial artifacts
@@ -191,17 +193,23 @@ async function submitReview(quality) {
         // Show resources on incorrect answer
         if (quality < 3 && card.resources && card.resources.length > 0) {
             const resList = document.getElementById('resources-list');
-            resList.innerHTML = card.resources.map(r =>
-                `<a href="${r.content_or_url}" target="_blank" class="block hover:underline">[${r.type}] ${r.title}</a>`
-            ).join('');
+            resList.textContent = '';
+            card.resources.forEach(r => {
+                const a = document.createElement('a');
+                a.href = r.content_or_url;
+                a.target = '_blank';
+                a.className = 'block hover:underline';
+                a.textContent = `[${r.type}] ${r.title}`;
+                resList.appendChild(a);
+            });
             document.getElementById('resources-hint').classList.remove('hidden');
             await new Promise(resolve => setTimeout(resolve, 3000));
         }
+        currentIndex++;
     } catch(e) {
         console.error('Review failed:', e);
+        return;
     }
-
-    currentIndex++;
 
     if (currentIndex >= cards.length) {
         showComplete();
@@ -211,7 +219,7 @@ async function submitReview(quality) {
     // Next card
     document.getElementById('card-id-btn').textContent = `flashcard:${cards[currentIndex].id.substring(0, 8)}...`;
     document.getElementById('card-front').textContent = cards[currentIndex].front;
-    document.getElementById('card-back').innerHTML = `<hr class="my-4 border-gray-200"><p class="text-gray-600">${cards[currentIndex].back}</p>`;
+    document.getElementById('card-back').innerHTML = DOMPurify.sanitize(`<hr class="my-4 border-gray-200"><p class="text-gray-600">${cards[currentIndex].back}</p>`);
     document.getElementById('card-back').classList.add('hidden');
     document.getElementById('reveal-btn').classList.remove('hidden');
     document.getElementById('quality-buttons').classList.add('hidden');

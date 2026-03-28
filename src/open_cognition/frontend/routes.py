@@ -308,7 +308,7 @@ async def _render_review(request: Request, cards, topic):
             "request": request,
             "topic": topic,
             "cards": cards,
-            "cards_json": json.dumps(cards_data, default=str),
+            "cards_json": json.dumps(cards_data, default=str).replace("</", "<\\/"),
             "total": len(cards),
             "current": 0,
         },

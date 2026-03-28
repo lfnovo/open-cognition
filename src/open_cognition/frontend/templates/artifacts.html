@@ -35,8 +35,8 @@
             {% endfor %}
         </div>
         {% endif %}
-        <button onclick="openArtifactModal('{{ art.type }}', '{{ art.title | e }}', this.getAttribute('data-content'))"
-                data-content="{{ art.content | e }}"
+        <button onclick="openArtifactModal(this.dataset.type, this.dataset.title, this.dataset.content)"
+                data-type="{{ art.type }}" data-title="{{ art.title | e }}" data-content="{{ art.content | e }}"
                 class="text-sm text-indigo-600 hover:underline cursor-pointer">
             Ver conteúdo
         </button>

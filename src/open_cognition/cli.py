@@ -39,7 +39,11 @@ def cmd_serve():
     i = 0
     while i < len(args):
         if args[i] == "--port" and i + 1 < len(args):
-            port = int(args[i + 1])
+            try:
+                port = int(args[i + 1])
+            except ValueError:
+                print(f"Error: invalid port '{args[i + 1]}'")
+                sys.exit(1)
             i += 2
         elif args[i] == "--host" and i + 1 < len(args):
             host = args[i + 1]
