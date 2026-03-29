@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Artefatos — open-cognition{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Artefatos</h1>
+</div>
+
+<!-- Filter by topic -->
+<div class="mb-6">
+    <form method="get" action="/artifacts" class="flex gap-2 items-center">
+        <label class="text-sm text-gray-500">Filtrar por tópico:</label>
+        <select name="topic_id" onchange="this.form.submit()"
+                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">Todos</option>
+            {% for t in all_topics %}
+            <option value="{{ t.id }}" {{ 'selected' if selected_topic == t.id else '' }}>{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if artifacts %}
+<div class="space-y-4">
+    {% for art in artifacts %}
+    <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs uppercase bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{{ art.type }}</span>
+            <span class="font-medium">{{ art.title }}</span>
+            <button onclick="copyId('artifact:{{ art.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">artifact:{{ art.id[:8] }}...</button>
+        </div>
+        {% if art.topic_details %}
+        <div class="flex flex-wrap gap-1 mb-3">
+            {% for t in art.topic_details %}
+            <a href="/topics/{{ t.id }}" class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded hover:bg-indigo-100">{{ t.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <button onclick="openArtifactModal(this.dataset.type, this.dataset.title, this.dataset.content)"
+                data-type="{{ art.type }}" data-title="{{ art.title | e }}" data-content="{{ art.content | e }}"
+                class="text-sm text-indigo-600 hover:underline cursor-pointer">
+            Ver conteúdo
+        </button>
+        {% if art.created %}
+        <p class="mt-3 text-xs text-gray-300">{{ art.created.strftime('%d/%m/%Y %H:%M') }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-400">Nenhum artefato encontrado.</p>
+{% endif %}
+
+{% endblock %}

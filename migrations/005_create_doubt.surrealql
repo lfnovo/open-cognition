@@ -1,0 +1,12 @@
+DEFINE TABLE doubt SCHEMAFULL;
+DEFINE FIELD content ON doubt TYPE string ASSERT $value != NONE;
+DEFINE FIELD status ON doubt TYPE string DEFAULT 'open' ASSERT $value INSIDE ['open', 'resolved'];
+DEFINE FIELD flashcard_id ON doubt TYPE option<string>;
+DEFINE FIELD topic_id ON doubt TYPE option<string>;
+DEFINE FIELD topic_name ON doubt TYPE option<string>;
+DEFINE FIELD created ON doubt TYPE option<datetime>;
+DEFINE FIELD updated ON doubt TYPE option<datetime>;
+
+DEFINE INDEX idx_doubt_status ON doubt FIELDS status;
+DEFINE INDEX idx_doubt_topic ON doubt FIELDS topic_id;
+DEFINE INDEX idx_doubt_created ON doubt FIELDS created;

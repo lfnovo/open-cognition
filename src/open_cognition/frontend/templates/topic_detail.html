@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ topic.name }} — open-cognition{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <a href="/topics" class="text-sm text-gray-400 hover:text-gray-600">&larr; Tópicos</a>
+    <div class="flex justify-between items-center mt-2">
+        <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold">{{ topic.name }}</h1>
+            <button onclick="copyId('topic:{{ topic.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">topic:{{ topic.id[:8] }}...</button>
+        </div>
+        <a href="/topics/{{ topic.id }}/edit" class="text-sm text-gray-400 hover:text-gray-600">editar</a>
+    </div>
+    {% if topic.description %}
+    <p class="text-gray-500 mt-1">{{ topic.description }}</p>
+    {% endif %}
+</div>
+
+{% if due_cards %}
+<div class="mb-6">
+    <a href="/review/{{ topic.id }}" class="inline-block bg-indigo-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-indigo-700 transition text-sm">
+        Revisar agora ({{ due_cards|length }} cards)
+    </a>
+</div>
+{% endif %}
+
+<!-- Flashcards -->
+<section class="mb-8">
+    <h2 class="text-lg font-semibold mb-3">Flashcards ({{ flashcards|length }})</h2>
+    {% if flashcards %}
+    <div class="space-y-2">
+        {% for card in flashcards %}
+        <div class="bg-white rounded-lg border border-gray-200 p-3">
+            <div class="flex justify-between items-start">
+                <p class="font-medium text-sm">{{ card.front }}</p>
+                <button onclick="copyId('flashcard:{{ card.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition flex-shrink-0 ml-2" title="Copiar ID">flashcard:{{ card.id[:8] }}...</button>
+            </div>
+            <p class="text-sm text-gray-500 mt-1">{{ card.back }}</p>
+            <div class="flex gap-3 mt-2 text-xs text-gray-400">
+                <span>Interval: {{ card.interval }}d</span>
+                <span>Reps: {{ card.repetitions }}</span>
+                <span>EF: {{ card.ease_factor }}</span>
+                {% if card.due_date %}
+                <span>Due: {{ card.due_date.strftime('%d/%m/%Y') if card.due_date else '-' }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-400 text-sm">Nenhum flashcard neste tópico.</p>
+    {% endif %}
+</section>
+
+<!-- Resources -->
+<section class="mb-8">
+    <h2 class="text-lg font-semibold mb-3">Recursos ({{ resources|length }})</h2>
+    {% if resources %}
+    <div class="space-y-2">
+        {% for res in resources %}
+        <div class="bg-white rounded-lg border border-gray-200 p-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-xs uppercase bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{{ res.type }}</span>
+                <span class="text-sm font-medium">{{ res.title }}</span>
+                <button onclick="copyId('resource:{{ res.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">resource:{{ res.id[:8] }}...</button>
+            </div>
+            {% if res.type in ['link', 'pdf', 'video'] %}
+            <a href="{{ res.content_or_url }}" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-600 hover:underline">abrir</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-400 text-sm">Nenhum recurso neste tópico.</p>
+    {% endif %}
+</section>
+
+<!-- Artifacts -->
+<section class="mb-8">
+    <h2 class="text-lg font-semibold mb-3">Artefatos ({{ artifacts|length }})</h2>
+    {% if artifacts %}
+    <div class="space-y-3">
+        {% for art in artifacts %}
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs uppercase bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{{ art.type }}</span>
+                <span class="font-medium text-sm">{{ art.title }}</span>
+                <button onclick="copyId('artifact:{{ art.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">artifact:{{ art.id[:8] }}...</button>
+            </div>
+            <button onclick="openArtifactModal(this.dataset.type, this.dataset.title, this.dataset.content)"
+                    data-type="{{ art.type }}" data-title="{{ art.title | e }}" data-content="{{ art.content | e }}"
+                    class="text-sm text-indigo-600 hover:underline cursor-pointer">
+                Ver conteúdo
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-400 text-sm">Nenhum artefato neste tópico.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Nova Dúvida — open-cognition{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <a href="/doubts" class="text-sm text-gray-400 hover:text-gray-600">&larr; Dúvidas</a>
+    <h1 class="text-2xl font-bold mt-2">Nova Dúvida</h1>
+</div>
+
+<div class="bg-white rounded-lg border border-gray-200 p-6 max-w-lg">
+    <form method="post" action="/doubts/create">
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Dúvida</label>
+            <textarea name="content" rows="3" required placeholder="O que você quer aprofundar?"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tópico (opcional)</label>
+            <select name="topic_id"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">Nenhum</option>
+                {% for t in all_topics %}
+                <option value="{{ t.id }}">{{ t.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
+                Salvar
+            </button>
+            <a href="/doubts" class="text-gray-500 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

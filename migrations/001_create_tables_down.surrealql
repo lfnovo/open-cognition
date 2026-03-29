@@ -1,0 +1,5 @@
+REMOVE TABLE topic;
+REMOVE TABLE flashcard;
+REMOVE TABLE resource;
+REMOVE TABLE artifact;
+REMOVE TABLE review_log;

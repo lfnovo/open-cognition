@@ -1,0 +1,11 @@
+services:
+  surrealdb:
+    image: surrealdb/surrealdb:v2.2.1
+    command: start --user ${SURREAL_USER:-root} --pass ${SURREAL_PASSWORD:-root} file:/data/srdb.db
+    ports:
+      - "${SURREAL_PORT:-8000}:8000"
+    volumes:
+      - surrealdb_data:/data
+
+volumes:
+  surrealdb_data:

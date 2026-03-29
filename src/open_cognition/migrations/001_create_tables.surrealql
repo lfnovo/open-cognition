@@ -1,0 +1,43 @@
+-- Topics
+DEFINE TABLE topic SCHEMAFULL;
+DEFINE FIELD name ON topic TYPE string ASSERT $value != NONE;
+DEFINE FIELD description ON topic TYPE option<string>;
+DEFINE FIELD created ON topic TYPE option<datetime>;
+DEFINE FIELD updated ON topic TYPE option<datetime>;
+
+-- Flashcards
+DEFINE TABLE flashcard SCHEMAFULL;
+DEFINE FIELD front ON flashcard TYPE string ASSERT $value != NONE;
+DEFINE FIELD back ON flashcard TYPE string ASSERT $value != NONE;
+DEFINE FIELD due_date ON flashcard TYPE option<datetime>;
+DEFINE FIELD interval ON flashcard TYPE option<int> DEFAULT 0;
+DEFINE FIELD ease_factor ON flashcard TYPE option<float> DEFAULT 2.5;
+DEFINE FIELD repetitions ON flashcard TYPE option<int> DEFAULT 0;
+DEFINE FIELD created ON flashcard TYPE option<datetime>;
+DEFINE FIELD updated ON flashcard TYPE option<datetime>;
+
+-- Resources
+DEFINE TABLE resource SCHEMAFULL;
+DEFINE FIELD type ON resource TYPE string ASSERT $value INSIDE ['pdf', 'video', 'link', 'markdown'];
+DEFINE FIELD title ON resource TYPE string ASSERT $value != NONE;
+DEFINE FIELD content_or_url ON resource TYPE string ASSERT $value != NONE;
+DEFINE FIELD created ON resource TYPE option<datetime>;
+DEFINE FIELD updated ON resource TYPE option<datetime>;
+
+-- Artifacts
+DEFINE TABLE artifact SCHEMAFULL;
+DEFINE FIELD type ON artifact TYPE string ASSERT $value INSIDE ['summary', 'feynman', 'schema', 'notes'];
+DEFINE FIELD title ON artifact TYPE string ASSERT $value != NONE;
+DEFINE FIELD content ON artifact TYPE string ASSERT $value != NONE;
+DEFINE FIELD created ON artifact TYPE option<datetime>;
+DEFINE FIELD updated ON artifact TYPE option<datetime>;
+
+-- Review logs
+DEFINE TABLE review_log SCHEMAFULL;
+DEFINE FIELD flashcard_id ON review_log TYPE string ASSERT $value != NONE;
+DEFINE FIELD reviewed_at ON review_log TYPE datetime ASSERT $value != NONE;
+DEFINE FIELD quality ON review_log TYPE int ASSERT $value >= 0 AND $value <= 5;
+DEFINE FIELD interval_before ON review_log TYPE int;
+DEFINE FIELD interval_after ON review_log TYPE int;
+DEFINE FIELD created ON review_log TYPE option<datetime>;
+DEFINE FIELD updated ON review_log TYPE option<datetime>;

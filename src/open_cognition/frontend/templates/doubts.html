@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dúvidas — open-cognition{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Dúvidas</h1>
+    <a href="/doubts/new" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
+        + Nova dúvida
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="mb-6 flex gap-4 items-center">
+    <form method="get" action="/doubts" class="flex gap-3 items-center">
+        <label class="text-sm text-gray-500">Status:</label>
+        <select name="status" onchange="this.form.submit()"
+                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="" {{ 'selected' if not selected_status else '' }}>Todos</option>
+            <option value="open" {{ 'selected' if selected_status == 'open' else '' }}>Abertas</option>
+            <option value="resolved" {{ 'selected' if selected_status == 'resolved' else '' }}>Resolvidas</option>
+        </select>
+        <label class="text-sm text-gray-500">Tópico:</label>
+        <select name="topic_id" onchange="this.form.submit()"
+                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">Todos</option>
+            {% for t in all_topics %}
+            <option value="{{ t.id }}" {{ 'selected' if selected_topic == t.id else '' }}>{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if doubts %}
+<div class="space-y-3">
+    {% for doubt in doubts %}
+    <div class="bg-white rounded-lg border border-gray-200 p-4 {{ 'opacity-60' if doubt.status == 'resolved' else '' }}">
+        <div class="flex justify-between items-start">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                    {% if doubt.status == 'open' %}
+                    <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">aberta</span>
+                    {% else %}
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">resolvida</span>
+                    {% endif %}
+                    <button onclick="copyId('doubt:{{ doubt.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">doubt:{{ doubt.id[:8] }}...</button>
+                </div>
+                <p class="text-sm mt-1">{{ doubt.content }}</p>
+                <div class="flex gap-3 mt-2 text-xs text-gray-400">
+                    {% if doubt.topic_name %}
+                    <a href="/topics/{{ doubt.topic_id }}" class="text-indigo-500 hover:underline">{{ doubt.topic_name }}</a>
+                    {% endif %}
+                    {% if doubt.flashcard_id %}
+                    <span>card: {{ doubt.flashcard_id[:8] }}...</span>
+                    {% endif %}
+                    {% if doubt.created %}
+                    <span>{{ doubt.created.strftime('%d/%m/%Y %H:%M') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if doubt.status == 'open' %}
+            <form method="post" action="/doubts/{{ doubt.id }}/resolve" class="ml-3">
+                <button type="submit" class="text-xs text-green-600 hover:text-green-800 border border-green-200 px-2 py-1 rounded hover:bg-green-50 transition">
+                    Resolver
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-400">Nenhuma dúvida encontrada.</p>
+{% endif %}
+{% endblock %}

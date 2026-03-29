@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Recursos — open-cognition{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Recursos</h1>
+</div>
+
+<!-- Filter by topic -->
+<div class="mb-6">
+    <form method="get" action="/resources" class="flex gap-2 items-center">
+        <label class="text-sm text-gray-500">Filtrar por tópico:</label>
+        <select name="topic_id" onchange="this.form.submit()"
+                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">Todos</option>
+            {% for t in all_topics %}
+            <option value="{{ t.id }}" {{ 'selected' if selected_topic == t.id else '' }}>{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if resources %}
+<div class="space-y-3">
+    {% for res in resources %}
+    <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="flex justify-between items-start">
+            <div class="flex items-center gap-2">
+                <span class="text-xs uppercase bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{{ res.type }}</span>
+                <span class="font-medium">{{ res.title }}</span>
+                <button onclick="copyId('resource:{{ res.id }}', this)" class="text-xs text-gray-300 hover:text-gray-500 font-mono cursor-pointer transition" title="Copiar ID">resource:{{ res.id[:8] }}...</button>
+            </div>
+            {% if res.type in ['link', 'pdf', 'video'] %}
+            <a href="{{ res.content_or_url }}" target="_blank" rel="noopener noreferrer" class="text-sm text-indigo-600 hover:underline">abrir</a>
+            {% endif %}
+        </div>
+        {% if res.type == 'markdown' %}
+        <div class="mt-2 text-sm text-gray-600">
+            {{ res.content_or_url[:300] }}{% if res.content_or_url|length > 300 %}...{% endif %}
+        </div>
+        {% else %}
+        <p class="mt-1 text-xs text-gray-400 truncate">{{ res.content_or_url }}</p>
+        {% endif %}
+        {% if res.created %}
+        <p class="mt-2 text-xs text-gray-300">{{ res.created.strftime('%d/%m/%Y %H:%M') }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-400">Nenhum recurso encontrado.</p>
+{% endif %}
+{% endblock %}
