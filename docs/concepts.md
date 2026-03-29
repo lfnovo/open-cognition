@@ -1,62 +1,62 @@
-# Conceitos
+# Concepts
 
-## Tópico
+## Topic
 
-O nó central do grafo de conhecimento. Representa uma área de estudo que o usuário está construindo.
+The central node of the knowledge graph. Represents an area of study that the user is building.
 
-**Exemplos:** "Transformers", "Attention Mechanism", "Backpropagation", "TIR — Taxa Interna de Retorno"
+**Examples:** "Transformers", "Attention Mechanism", "Backpropagation", "IRR — Internal Rate of Return"
 
-**Características:**
-- Relação N:N consigo mesmo — um tópico pode ser subtópico de vários outros
-- A granularidade é definida pelo usuário
-- Tópicos nunca são criados silenciosamente pelo LLM — sempre com aprovação
+**Characteristics:**
+- N:N relationship with itself — a topic can be a subtopic of multiple others
+- Granularity is defined by the user
+- Topics are never silently created by the LLM — always with approval
 
-**Bom tópico:** específico o suficiente para ter um conjunto coerente de flashcards, mas amplo o suficiente para não ser um único card. "Gradient Descent" é um tópico. "Momentum em Gradient Descent" pode ser um subtópico.
+**Good topic:** specific enough to have a coherent set of flashcards, but broad enough not to be a single card. "Gradient Descent" is a topic. "Momentum in Gradient Descent" could be a subtopic.
 
 ## Flashcard
 
-Artefato de prática com frente (pergunta) e verso (resposta). Associado a pelo menos um tópico.
+A practice artifact with a front (question) and back (answer). Associated with at least one topic.
 
-**Regras de formulação:**
-- Um conceito por card
-- Frente como pergunta ativa ("Por que..." não "O que é...")
-- Verso conciso (máximo 3 linhas)
-- Contexto mínimo na frente para evitar ambiguidade
+**Formulation rules:**
+- One concept per card
+- Front as an active question ("Why..." not "What is...")
+- Concise back (maximum 3 lines)
+- Minimal context on the front to avoid ambiguity
 
-**Campos de spaced repetition:**
-- `due_date` — quando o card deve ser revisado
-- `interval` — dias até a próxima revisão
-- `ease_factor` — multiplicador de crescimento do intervalo (inicia em 2.5)
-- `repetitions` — quantas vezes foi revisado com sucesso consecutivamente
+**Spaced repetition fields:**
+- `due_date` — when the card should be reviewed
+- `interval` — days until the next review
+- `ease_factor` — interval growth multiplier (starts at 2.5)
+- `repetitions` — how many times it was reviewed successfully consecutively
 
-Ver [SM-2](sm2.md) para detalhes do algoritmo.
+See [SM-2](sm2.md) for algorithm details.
 
-## Recurso
+## Resource
 
-Fonte de referência associada a tópicos e opcionalmente a flashcards específicos.
+A reference source associated with topics and optionally with specific flashcards.
 
-**Tipos:** `pdf`, `video`, `link`, `markdown`
+**Types:** `pdf`, `video`, `link`, `markdown`
 
-**Uso no sistema:**
-- Consultados durante revisão — quando o usuário erra um card, os recursos associados aparecem como apoio
-- Um recurso pode ser associado a múltiplos tópicos e múltiplos cards
+**Usage in the system:**
+- Consulted during review — when the user gets a card wrong, the associated resources appear as support
+- A resource can be associated with multiple topics and multiple cards
 
-**Distinção de artefato:** um paper é um recurso. O resumo gerado a partir desse paper é um artefato.
+**Distinction from artifact:** a paper is a resource. The summary generated from that paper is an artifact.
 
-## Artefato
+## Artifact
 
-Output estruturado gerado numa sessão de estudo. Sempre em markdown.
+Structured output generated during a study session. Always in markdown.
 
-**Tipos:**
-- `summary` — resumo de um tópico ou sessão
-- `feynman` — registro de uma sessão Feynman (gaps, consolidação)
-- `schema` — esquema conceitual, mapa, framework
-- `notes` — notas gerais
+**Types:**
+- `summary` — summary of a topic or session
+- `feynman` — record of a Feynman session (gaps, consolidation)
+- `schema` — conceptual schema, map, framework
+- `notes` — general notes
 
-**Características:**
-- Podem conter diagramas mermaid
-- Associados ao tópico da sessão onde foram criados
-- Visualizáveis em modal com markdown renderizado na UI
+**Characteristics:**
+- Can contain mermaid diagrams
+- Associated with the topic of the session where they were created
+- Viewable in a modal with rendered markdown in the UI
 
 ## Doubt
 
@@ -68,50 +68,50 @@ A conceptual question the user wants to explore deeper. Can arise during card re
 - When linked to a card, the topic is inherited automatically
 - Open doubts are a natural entry point for study sessions
 
-## Sessão
+## Session
 
-Contexto efêmero de estudo. Tem um tópico de escopo e acontece numa conversa com o LLM.
+An ephemeral study context. Has a scoping topic and takes place in a conversation with the LLM.
 
-**Características:**
-- A sessão em si **não é persistida** — só seus outputs (cards, artefatos, recursos)
-- `start_session` carrega o contexto completo do tópico para o LLM
-- `end_session` persiste todos os outputs em batch
-- Uma sessão pode produzir zero outputs — isso é válido
+**Characteristics:**
+- The session itself **is not persisted** — only its outputs (cards, artifacts, resources)
+- `start_session` loads the complete topic context for the LLM
+- `end_session` persists all outputs in batch
+- A session can produce zero outputs — that is valid
 
-## Sessão Feynman
+## Feynman Session
 
-Versão estruturada da sessão de estudo baseada na Técnica Feynman. Protocolo em 4 estados:
+A structured version of the study session based on the Feynman Technique. Protocol with 4 states:
 
-1. **Calibração** — usuário explica o conceito livremente
-2. **Sondagem de Gaps** — LLM identifica e explora pontos fracos
-3. **Consolidação** — usuário refaz a explicação com os gaps fechados
-4. **Encerramento** — síntese, artefato markdown, flashcards para gaps em aberto
+1. **Calibration** — user explains the concept freely
+2. **Gap Probing** — LLM identifies and explores weak points
+3. **Consolidation** — user redoes the explanation with the gaps closed
+4. **Closing** — synthesis, markdown artifact, flashcards for open gaps
 
-## Sessão de Revisão
+## Review Session
 
-Fluxo na UI web onde o usuário revisa flashcards pendentes:
+A flow in the web UI where the user reviews pending flashcards:
 
-1. Card aparece com a frente (pergunta)
-2. Usuário tenta lembrar e clica "Mostrar resposta"
-3. Resposta aparece
-4. Usuário avalia: Esqueci (0) / Errei (2) / Difícil (3) / Ok (4) / Fácil (5)
-5. SM-2 calcula o próximo `due_date`
-6. Se errou, recursos de apoio aparecem
-7. Artefatos do tópico ficam acessíveis na sidebar
+1. Card appears with the front (question)
+2. User tries to recall and clicks "Show answer"
+3. Answer appears
+4. User rates: Forgot (0) / Wrong (2) / Hard (3) / Ok (4) / Easy (5)
+5. SM-2 calculates the next `due_date`
+6. If wrong, supporting resources appear
+7. Topic artifacts are accessible in the sidebar
 
-## Grafo de Conhecimento
+## Knowledge Graph
 
-A estrutura de tópicos forma um grafo direcionado (não necessariamente uma árvore — um tópico pode ter múltiplos pais). As relações são:
+The topic structure forms a directed graph (not necessarily a tree — a topic can have multiple parents). The relations are:
 
 ```
-Avaliação de Investimentos
-├── TIR
-├── VPL
-├── TMA
-└── Valor do Dinheiro no Tempo
+Investment Evaluation
+├── IRR
+├── NPV
+├── MAR
+└── Time Value of Money
 
 Python
 └── Decorators
 ```
 
-O grafo é do usuário — o LLM propõe, mas o humano aprova toda reorganização.
+The graph belongs to the user — the LLM proposes, but the human approves every reorganization.

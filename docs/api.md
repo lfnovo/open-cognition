@@ -1,12 +1,12 @@
-# API REST
+# REST API
 
-Todos os endpoints estão prefixados com `/api`. A documentação interativa (Swagger) está disponível em `/api/docs` quando o server está rodando.
+All endpoints are prefixed with `/api`. Interactive documentation (Swagger) is available at `/api/docs` when the server is running.
 
-## Tópicos
+## Topics
 
 ### `GET /api/topics`
 
-Lista todos os tópicos com hierarquia de subtópicos.
+Lists all topics with subtopic hierarchy.
 
 **Response:** `200 OK`
 ```json
@@ -14,7 +14,7 @@ Lista todos os tópicos com hierarquia de subtópicos.
   {
     "id": "abc123",
     "name": "Transformers",
-    "description": "Arquitetura de deep learning",
+    "description": "Deep learning architecture",
     "created": "2026-03-21T15:00:00Z",
     "updated": "2026-03-21T15:00:00Z",
     "subtopics": [
@@ -26,58 +26,58 @@ Lista todos os tópicos com hierarquia de subtópicos.
 
 ### `POST /api/topics`
 
-Cria um tópico.
+Creates a topic.
 
 **Body:**
 ```json
-{"name": "Transformers", "description": "opcional"}
+{"name": "Transformers", "description": "optional"}
 ```
 
 **Response:** `201 Created`
 
 ### `GET /api/topics/{id}`
 
-Retorna um tópico pelo ID.
+Returns a topic by ID.
 
 ### `PATCH /api/topics/{id}`
 
-Atualiza nome e/ou descrição.
+Updates name and/or description.
 
 **Body:**
 ```json
-{"name": "novo nome", "description": "nova descrição"}
+{"name": "new name", "description": "new description"}
 ```
 
 ### `POST /api/topics/{id}/subtopics`
 
-Cria relação pai/filho.
+Creates a parent/child relationship.
 
 **Body:**
 ```json
-{"child_id": "id_do_subtopico"}
+{"child_id": "subtopic_id"}
 ```
 
 ### `DELETE /api/topics/{id}/subtopics/{child_id}`
 
-Remove relação pai/filho.
+Removes a parent/child relationship.
 
 ## Flashcards
 
 ### `GET /api/flashcards`
 
-Lista flashcards. Filtro opcional por tópico.
+Lists flashcards. Optional filter by topic.
 
-**Query params:** `topic_id` (opcional)
+**Query params:** `topic_id` (optional)
 
 ### `POST /api/flashcards`
 
-Cria um flashcard.
+Creates a flashcard.
 
 **Body:**
 ```json
 {
-  "front": "Pergunta",
-  "back": "Resposta",
+  "front": "Question",
+  "back": "Answer",
   "topic_ids": ["abc123"],
   "resource_ids": ["xyz789"]
 }
@@ -85,17 +85,17 @@ Cria um flashcard.
 
 ### `GET /api/flashcards/due`
 
-Lista flashcards com `due_date <= agora`. Filtro opcional por tópico.
+Lists flashcards with `due_date <= now`. Optional filter by topic.
 
-**Query params:** `topic_id` (opcional)
+**Query params:** `topic_id` (optional)
 
 ### `PATCH /api/flashcards/{id}`
 
-Atualiza frente e/ou verso.
+Updates front and/or back.
 
 ### `POST /api/flashcards/{id}/review`
 
-Registra uma revisão e recalcula SM-2.
+Records a review and recalculates SM-2.
 
 **Body:**
 ```json
@@ -115,17 +115,17 @@ Registra uma revisão e recalcula SM-2.
 }
 ```
 
-## Recursos
+## Resources
 
 ### `GET /api/resources`
 
-Lista recursos. Filtro opcional por tópico.
+Lists resources. Optional filter by topic.
 
-**Query params:** `topic_id` (opcional)
+**Query params:** `topic_id` (optional)
 
 ### `POST /api/resources`
 
-Cria um recurso.
+Creates a resource.
 
 **Body:**
 ```json
@@ -138,39 +138,39 @@ Cria um recurso.
 }
 ```
 
-**Tipos válidos:** `pdf`, `video`, `link`, `markdown`
+**Valid types:** `pdf`, `video`, `link`, `markdown`
 
 ### `PATCH /api/resources/{id}`
 
-Atualiza tipo, título e/ou conteúdo.
+Updates type, title, and/or content.
 
-## Artefatos
+## Artifacts
 
 ### `GET /api/artifacts`
 
-Lista artefatos. Filtro opcional por tópico.
+Lists artifacts. Optional filter by topic.
 
-**Query params:** `topic_id` (opcional)
+**Query params:** `topic_id` (optional)
 
 ### `POST /api/artifacts`
 
-Cria um artefato.
+Creates an artifact.
 
 **Body:**
 ```json
 {
   "type": "summary",
-  "title": "Resumo: Transformers",
-  "content": "# Transformers\n\nConteúdo em markdown...",
+  "title": "Summary: Transformers",
+  "content": "# Transformers\n\nMarkdown content...",
   "topic_ids": ["abc123"]
 }
 ```
 
-**Tipos válidos:** `summary`, `feynman`, `schema`, `notes`
+**Valid types:** `summary`, `feynman`, `schema`, `notes`
 
 ### `PATCH /api/artifacts/{id}`
 
-Atualiza tipo, título e/ou conteúdo.
+Updates type, title, and/or content.
 
 ## Health
 
@@ -178,7 +178,7 @@ Atualiza tipo, título e/ou conteúdo.
 
 (Note: this endpoint is at the root, not under /api)
 
-Retorna status do server.
+Returns server status.
 
 ```json
 {"status": "ok"}

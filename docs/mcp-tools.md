@@ -1,19 +1,19 @@
 # MCP Tools
 
-O open-cognition expõe 20 tools via MCP para integração com LLMs compatíveis (Claude Desktop, Claude Code, etc.).
+open-cognition exposes 20 tools via MCP for integration with compatible LLMs (Claude Desktop, Claude Code, etc.).
 
-## Como usar
+## How to Use
 
 ### Claude Desktop
 
-Adicione ao `claude_desktop_config.json`:
+Add to `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "open-cognition": {
-      "command": "/caminho/para/uv",
-      "args": ["run", "--directory", "/caminho/para/open-cognition", "python", "run_mcp.py"],
+      "command": "/path/to/uv",
+      "args": ["run", "--directory", "/path/to/open-cognition", "python", "run_mcp.py"],
       "env": {
         "SURREAL_URL": "ws://localhost:8000/rpc",
         "SURREAL_USER": "root",
@@ -28,88 +28,88 @@ Adicione ao `claude_desktop_config.json`:
 
 ### Claude Code
 
-Adicione `.mcp.json` na raiz do projeto onde vai usar:
+Add `.mcp.json` at the root of the project where you will use it:
 
 ```json
 {
   "mcpServers": {
     "open-cognition": {
       "command": "uv",
-      "args": ["run", "--directory", "/caminho/para/open-cognition", "python", "run_mcp.py"],
+      "args": ["run", "--directory", "/path/to/open-cognition", "python", "run_mcp.py"],
       "env": { ... }
     }
   }
 }
 ```
 
-## Tools Disponíveis
+## Available Tools
 
-### Tópicos
+### Topics
 
-| Tool | Descrição |
-|------|-----------|
-| `get_topics()` | Lista todos os tópicos com hierarquia de subtópicos |
-| `create_topic(name, description?, parent_ids?)` | Cria tópico, opcionalmente como subtópico |
-| `update_topic(topic_id, name?, description?)` | Atualiza nome ou descrição |
-| `relate_topics(parent_id, child_id)` | Cria relação pai/filho entre tópicos |
+| Tool | Description |
+|------|-------------|
+| `get_topics()` | Lists all topics with subtopic hierarchy |
+| `create_topic(name, description?, parent_ids?)` | Creates a topic, optionally as a subtopic |
+| `update_topic(topic_id, name?, description?)` | Updates name or description |
+| `relate_topics(parent_id, child_id)` | Creates a parent/child relationship between topics |
 
 ### Flashcards
 
-| Tool | Descrição |
-|------|-----------|
-| `get_flashcards(topic_id?)` | Lista flashcards, filtro opcional por tópico |
-| `get_due_flashcards(topic_id?)` | Lista flashcards pendentes de revisão (due_date <= agora) |
-| `create_flashcard(front, back, topic_ids, resource_ids?)` | Cria um flashcard |
-| `create_flashcards_batch(cards)` | Cria múltiplos flashcards de uma vez |
-| `review_flashcard(flashcard_id, quality)` | Registra revisão e atualiza SM-2. Quality: 0/2/3/4/5 |
+| Tool | Description |
+|------|-------------|
+| `get_flashcards(topic_id?)` | Lists flashcards, optional filter by topic |
+| `get_due_flashcards(topic_id?)` | Lists flashcards pending review (due_date <= now) |
+| `create_flashcard(front, back, topic_ids, resource_ids?)` | Creates a flashcard |
+| `create_flashcards_batch(cards)` | Creates multiple flashcards at once |
+| `review_flashcard(flashcard_id, quality)` | Records a review and updates SM-2. Quality: 0/2/3/4/5 |
 
-`cards` é uma lista de objetos `{front, back, topic_ids, resource_ids?}`.
+`cards` is a list of objects `{front, back, topic_ids, resource_ids?}`.
 
-### Recursos
+### Resources
 
-| Tool | Descrição |
-|------|-----------|
-| `get_resources(topic_id?)` | Lista recursos, filtro opcional por tópico |
-| `create_resource(type, title, content_or_url, topic_ids)` | Cria recurso |
+| Tool | Description |
+|------|-------------|
+| `get_resources(topic_id?)` | Lists resources, optional filter by topic |
+| `create_resource(type, title, content_or_url, topic_ids)` | Creates a resource |
 
-Tipos: `pdf`, `video`, `link`, `markdown`.
+Types: `pdf`, `video`, `link`, `markdown`.
 
-### Artefatos
+### Artifacts
 
-| Tool | Descrição |
-|------|-----------|
-| `get_artifacts(topic_id?)` | Lista artefatos, filtro opcional por tópico |
-| `create_artifact(type, title, content, topic_ids)` | Cria artefato em markdown |
+| Tool | Description |
+|------|-------------|
+| `get_artifacts(topic_id?)` | Lists artifacts, optional filter by topic |
+| `create_artifact(type, title, content, topic_ids)` | Creates an artifact in markdown |
 
-Tipos: `summary`, `feynman`, `schema`, `notes`.
+Types: `summary`, `feynman`, `schema`, `notes`.
 
-### Dúvidas
+### Doubts
 
-| Tool | Descrição |
-|------|-----------|
-| `get_doubts(topic_id?, status?)` | Lista dúvidas, filtro opcional por tópico e status |
-| `create_doubt(content, flashcard_id?, topic_id?)` | Cria uma dúvida |
-| `resolve_doubt(doubt_id)` | Marca dúvida como resolvida |
+| Tool | Description |
+|------|-------------|
+| `get_doubts(topic_id?, status?)` | Lists doubts, optional filter by topic and status |
+| `create_doubt(content, flashcard_id?, topic_id?)` | Creates a doubt |
+| `resolve_doubt(doubt_id)` | Marks a doubt as resolved |
 
 ### Struggling Cards
 
-| Tool | Descrição |
-|------|-----------|
-| `get_struggling_cards(topic_id?)` | Lista cards com baixo ease factor / muitos erros |
+| Tool | Description |
+|------|-------------|
+| `get_struggling_cards(topic_id?)` | Lists cards with low ease factor / many errors |
 
-### Sessão de Estudo
+### Study Session
 
-| Tool | Descrição |
-|------|-----------|
-| `start_session(topic_id)` | Inicia sessão. Retorna contexto completo: cards, recursos, artefatos |
-| `end_session(topic_id, session_type, summary?, outputs?)` | Encerra sessão, persiste outputs e registra log |
-| `get_session_logs(topic_id?)` | Consulta histórico de sessões |
+| Tool | Description |
+|------|-------------|
+| `start_session(topic_id)` | Starts a session. Returns full context: cards, resources, artifacts |
+| `end_session(topic_id, session_type, summary?, outputs?)` | Ends a session, persists outputs and records a log |
+| `get_session_logs(topic_id?)` | Queries session history |
 
-**Parâmetros de `end_session`:**
-- `topic_id` — tópico estudado
+**Parameters for `end_session`:**
+- `topic_id` — topic studied
 - `session_type` — `study`, `feynman`, `review`, `import`
-- `summary` — resumo breve do que foi coberto (opcional)
-- `outputs` — outputs a persistir (opcional):
+- `summary` — brief summary of what was covered (optional)
+- `outputs` — outputs to persist (optional):
 ```json
 {
   "flashcards": [{"front": "...", "back": "...", "topic_ids": [...]}],
@@ -118,6 +118,6 @@ Tipos: `summary`, `feynman`, `schema`, `notes`.
 }
 ```
 
-## Formato de Retorno
+## Return Format
 
-Todas as tools retornam **strings legíveis** (não JSON), pois são consumidas por LLMs. A API REST retorna JSON estruturado para consumo programático.
+All tools return **human-readable strings** (not JSON), as they are consumed by LLMs. The REST API returns structured JSON for programmatic consumption.

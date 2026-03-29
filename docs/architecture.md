@@ -1,6 +1,6 @@
-# Arquitetura
+# Architecture
 
-## Visão Geral
+## Overview
 
 ```
 ┌─────────────────┐     ┌─────────────────┐
@@ -17,7 +17,7 @@
                      │
               ┌──────▼──────┐
               │   Services  │
-              │  (lógica)   │
+              │  (logic)    │
               └──────┬──────┘
                      │
               ┌──────▼──────┐
@@ -32,99 +32,99 @@
               └─────────────┘
 ```
 
-## Camadas
+## Layers
 
 ### Routes (FastAPI)
 
-Endpoints REST em `/api/` que recebem/retornam JSON. Prefixados com `/api` para não conflitar com as rotas HTML do frontend.
+REST endpoints under `/api/` that receive/return JSON. Prefixed with `/api` to avoid conflicting with the frontend HTML routes.
 
 ### Frontend Routes
 
-Rotas HTML que servem templates Jinja2 + HTMX. Compartilham os mesmos services que a API REST.
+HTML routes that serve Jinja2 + HTMX templates. They share the same services as the REST API.
 
 ### MCP Tools (FastMCP)
 
-Tools expostas via protocolo MCP para qualquer LLM compatível. Importam os services diretamente (mesmo processo, sem HTTP). Retornam strings legíveis para LLMs, não JSON.
+Tools exposed via the MCP protocol for any compatible LLM. They import services directly (same process, no HTTP). They return human-readable strings for LLMs, not JSON.
 
 ### Services
 
-Lógica de negócio. Responsáveis por:
-- Orquestrar operações (criar flashcard + criar relações belongs_to)
-- Converter entre modelos internos (SurrealDB records) e externos (Pydantic responses)
-- Algoritmo SM-2
+Business logic. Responsible for:
+- Orchestrating operations (create flashcard + create belongs_to relations)
+- Converting between internal models (SurrealDB records) and external models (Pydantic responses)
+- SM-2 algorithm
 
 ### Repositories
 
-Queries SurrealQL via surreal-basics. Cada entidade tem seu repositório com operações CRUD e queries de grafo.
+SurrealQL queries via surreal-basics. Each entity has its own repository with CRUD operations and graph queries.
 
-### Banco de Dados (SurrealDB)
+### Database (SurrealDB)
 
-SurrealDB como banco de grafos. Tabelas SCHEMAFULL com relações via `RELATE` (graph edges).
+SurrealDB as a graph database. SCHEMAFULL tables with relations via `RELATE` (graph edges).
 
-## Modelo de Dados
+## Data Model
 
-### Tabelas
+### Tables
 
-| Tabela | Campos principais |
-|--------|-------------------|
+| Table | Main Fields |
+|-------|-------------|
 | `topic` | name, description |
 | `flashcard` | front, back, due_date, interval, ease_factor, repetitions |
 | `resource` | type, title, content_or_url |
 | `artifact` | type, title, content |
 | `review_log` | flashcard_id, reviewed_at, quality, interval_before, interval_after |
 
-Timestamps (`created`, `updated`) são adicionados automaticamente pelo surreal-basics.
+Timestamps (`created`, `updated`) are added automatically by surreal-basics.
 
-### Relações (Graph Edges)
+### Relations (Graph Edges)
 
 ```
-topic  ──has_subtopic──►  topic        # hierarquia
-flashcard ──belongs_to──► topic        # card pertence a tópico(s)
-resource  ──belongs_to──► topic        # recurso pertence a tópico(s)
-resource  ──supports────► flashcard    # recurso apoia um card
-artifact  ──belongs_to──► topic        # artefato pertence a tópico(s)
+topic  ──has_subtopic──►  topic        # hierarchy
+flashcard ──belongs_to──► topic        # card belongs to topic(s)
+resource  ──belongs_to──► topic        # resource belongs to topic(s)
+resource  ──supports────► flashcard    # resource supports a card
+artifact  ──belongs_to──► topic        # artifact belongs to topic(s)
 ```
 
-Vantagem sobre tabelas de junção: queries de grafo nativas (`->belongs_to->topic`), sem JOINs.
+Advantage over join tables: native graph queries (`->belongs_to->topic`), no JOINs.
 
-### Índices
+### Indexes
 
-- `idx_flashcard_due_date` — performance na query de cards pendentes
-- `idx_review_log_flashcard` — histórico de revisões por card
-- `idx_review_log_reviewed_at` — queries temporais
+- `idx_flashcard_due_date` — performance for the pending cards query
+- `idx_review_log_flashcard` — review history per card
+- `idx_review_log_reviewed_at` — temporal queries
 
-## Estrutura de Arquivos
+## File Structure
 
 ```
 open-cognition/
-├── SKILL.md                          # Skill document para o Claude
+├── SKILL.md                          # Skill document for Claude
 ├── migrations/                       # SurrealQL migrations
 ├── src/open_cognition/
 │   ├── main.py                       # FastAPI app + lifespan (auto-migrations)
-│   ├── config.py                     # Carrega .env
+│   ├── config.py                     # Loads .env
 │   ├── utils.py                      # strip_table_prefix, ensure_dict/list
 │   ├── models/                       # Pydantic schemas
-│   ├── repositories/                 # Queries SurrealQL
-│   ├── services/                     # Lógica de negócio + SM-2
-│   ├── routes/                       # Endpoints REST (/api)
+│   ├── repositories/                 # SurrealQL queries
+│   ├── services/                     # Business logic + SM-2
+│   ├── routes/                       # REST endpoints (/api)
 │   ├── frontend/
-│   │   ├── routes.py                 # Rotas HTML
+│   │   ├── routes.py                 # HTML routes
 │   │   └── templates/                # Jinja2 + HTMX
 │   └── mcp/
 │       ├── server.py                 # FastMCP server
-│       └── tools/                    # Tools por domínio
+│       └── tools/                    # Tools by domain
 └── tests/
 ```
 
 ## IDs
 
-SurrealDB usa IDs no formato `table:id` (ex: `topic:abc123`). Internamente, todas as camadas trabalham com o ID limpo (ex: `abc123`):
+SurrealDB uses IDs in the format `table:id` (e.g., `topic:abc123`). Internally, all layers work with the clean ID (e.g., `abc123`):
 
-- **Repositories**: adicionam o prefixo `table:` ao enviar queries para o SurrealDB
-- **Services**: removem o prefixo com `strip_table_prefix()` ao retornar dados
-- **API REST**: recebe e retorna IDs limpos (ex: `abc123`)
-- **UI**: exibe IDs no formato `table:id` (ex: `topic:abc123`) nos badges copiáveis, para facilitar referência ao LLM. O valor copiado inclui o prefixo.
+- **Repositories**: add the `table:` prefix when sending queries to SurrealDB
+- **Services**: remove the prefix with `strip_table_prefix()` when returning data
+- **REST API**: receives and returns clean IDs (e.g., `abc123`)
+- **UI**: displays IDs in the `table:id` format (e.g., `topic:abc123`) in copyable badges, to make it easier to reference for the LLM. The copied value includes the prefix.
 
 ## Migrations
 
-Migrations SurrealQL em `migrations/`, aplicadas automaticamente no startup via `AsyncMigrationRunner` do surreal-basics. O tracking fica na tabela `_sbl_migrations`.
+SurrealQL migrations in `migrations/`, applied automatically on startup via `AsyncMigrationRunner` from surreal-basics. Tracking is stored in the `_sbl_migrations` table.

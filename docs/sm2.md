@@ -1,55 +1,55 @@
-# Spaced Repetition — Algoritmo SM-2
+# Spaced Repetition — SM-2 Algorithm
 
-O open-cognition usa o algoritmo SM-2 (SuperMemo 2) para calcular quando cada flashcard deve ser revisado. É o mesmo algoritmo do Anki original.
+open-cognition uses the SM-2 (SuperMemo 2) algorithm to calculate when each flashcard should be reviewed. It is the same algorithm as the original Anki.
 
-## Princípio
+## Principle
 
-A ideia central é simples: revise um card **no momento em que você está prestes a esquecê-lo**. Cada revisão bem-sucedida aumenta o intervalo até a próxima. Se você erra, o intervalo reseta.
+The core idea is simple: review a card **at the moment you are about to forget it**. Each successful review increases the interval until the next one. If you get it wrong, the interval resets.
 
-## Parâmetros
+## Parameters
 
-Cada flashcard mantém 4 parâmetros:
+Each flashcard maintains 4 parameters:
 
-| Parâmetro | Valor Inicial | Descrição |
-|-----------|---------------|-----------|
-| `interval` | 0 | Dias até a próxima revisão |
-| `ease_factor` | 2.5 | Multiplicador de crescimento do intervalo |
-| `repetitions` | 0 | Revisões consecutivas bem-sucedidas |
-| `due_date` | agora | Próxima data de revisão |
+| Parameter | Initial Value | Description |
+|-----------|---------------|-------------|
+| `interval` | 0 | Days until the next review |
+| `ease_factor` | 2.5 | Interval growth multiplier |
+| `repetitions` | 0 | Consecutive successful reviews |
+| `due_date` | now | Next review date |
 
-## Escala de Qualidade
+## Quality Scale
 
-Após cada revisão, o usuário avalia a qualidade da resposta numa escala de 0 a 5:
+After each review, the user rates the quality of their response on a scale from 0 to 5:
 
-| Nota | Label | Significado |
-|------|-------|-------------|
-| 0 | Esqueci | Blackout total |
-| 1 | — | Errado, mas lembrou ao ver a resposta |
-| 2 | Errei | Errado, mas a resposta parecia familiar |
-| 3 | Difícil | Correto, com dificuldade significativa |
-| 4 | Ok | Correto, com alguma hesitação |
-| 5 | Fácil | Resposta imediata e confiante |
+| Score | Label | Meaning |
+|-------|-------|---------|
+| 0 | Forgot | Total blackout |
+| 1 | — | Wrong, but remembered upon seeing the answer |
+| 2 | Wrong | Wrong, but the answer seemed familiar |
+| 3 | Hard | Correct, with significant difficulty |
+| 4 | Ok | Correct, with some hesitation |
+| 5 | Easy | Immediate and confident answer |
 
-Na UI, expomos 5 botões: Esqueci (0), Errei (2), Difícil (3), Ok (4), Fácil (5).
+In the UI, we expose 5 buttons: Forgot (0), Wrong (2), Hard (3), Ok (4), Easy (5).
 
-## Algoritmo
+## Algorithm
 
-### 1. Atualizar Ease Factor
+### 1. Update Ease Factor
 
-Executado **sempre**, independente de acerto ou erro:
+Executed **always**, regardless of correct or incorrect answer:
 
 ```
-novo_EF = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+new_EF = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
 ```
 
-Onde `q` é a nota de qualidade (0-5).
+Where `q` is the quality score (0-5).
 
-O EF nunca desce abaixo de **1.3**.
+The EF never drops below **1.3**.
 
-**Exemplos de variação do EF:**
+**Examples of EF variation:**
 
-| Nota | Variação | EF (partindo de 2.5) |
-|------|----------|---------------------|
+| Score | Variation | EF (starting from 2.5) |
+|-------|-----------|------------------------|
 | 5 | +0.10 | 2.60 |
 | 4 | +0.00 | 2.50 |
 | 3 | -0.14 | 2.36 |
@@ -57,84 +57,84 @@ O EF nunca desce abaixo de **1.3**.
 | 1 | -0.54 | 1.96 |
 | 0 | -0.80 | 1.70 |
 
-### 2. Calcular Novo Intervalo
+### 2. Calculate New Interval
 
-**Se acertou (nota >= 3):**
-
-```
-se repetitions == 0: intervalo = 1 dia
-se repetitions == 1: intervalo = 6 dias
-se repetitions >= 2: intervalo = intervalo_anterior * novo_EF (arredondado)
-```
-
-`repetitions` incrementa em 1.
-
-**Se errou (nota < 3):**
+**If correct (score >= 3):**
 
 ```
-intervalo = 1 dia
-repetitions = 0  (reset total)
+if repetitions == 0: interval = 1 day
+if repetitions == 1: interval = 6 days
+if repetitions >= 2: interval = previous_interval * new_EF (rounded)
 ```
 
-O card volta ao início da curva de aprendizagem.
+`repetitions` increments by 1.
 
-### 3. Calcular Due Date
+**If incorrect (score < 3):**
 
 ```
-due_date = agora + intervalo dias
+interval = 1 day
+repetitions = 0  (full reset)
 ```
 
-## Exemplo Completo
+The card returns to the beginning of the learning curve.
 
-Card novo, revisado diariamente com qualidade 4 (Ok):
+### 3. Calculate Due Date
 
-| Revisão | Nota | Reps | EF | Intervalo | Próxima |
-|---------|------|------|----|-----------|---------|
-| 1a | 4 | 0→1 | 2.50 | 1d | amanhã |
-| 2a | 4 | 1→2 | 2.50 | 6d | +6 dias |
-| 3a | 4 | 2→3 | 2.50 | 15d | +15 dias |
-| 4a | 4 | 3→4 | 2.50 | 38d | +38 dias |
-| 5a | 4 | 4→5 | 2.50 | 95d | +95 dias |
+```
+due_date = now + interval days
+```
 
-Se na 3a revisão o usuário errasse (nota 2):
+## Full Example
 
-| Revisão | Nota | Reps | EF | Intervalo | Próxima |
-|---------|------|------|----|-----------|---------|
-| 3a | 2 | →0 | 2.18 | 1d | amanhã |
-| 4a | 4 | 0→1 | 2.18 | 1d | amanhã |
-| 5a | 4 | 1→2 | 2.18 | 6d | +6 dias |
-| 6a | 4 | 2→3 | 2.18 | 13d | +13 dias |
+New card, reviewed daily with quality 4 (Ok):
 
-Note que o EF mais baixo (2.18 vs 2.50) faz os intervalos crescerem mais devagar — o sistema aprendeu que esse card é mais difícil.
+| Review | Score | Reps | EF | Interval | Next |
+|--------|-------|------|----|----------|------|
+| 1st | 4 | 0→1 | 2.50 | 1d | tomorrow |
+| 2nd | 4 | 1→2 | 2.50 | 6d | +6 days |
+| 3rd | 4 | 2→3 | 2.50 | 15d | +15 days |
+| 4th | 4 | 3→4 | 2.50 | 38d | +38 days |
+| 5th | 4 | 4→5 | 2.50 | 95d | +95 days |
 
-## Efeito do Ease Factor
+If the user got it wrong on the 3rd review (score 2):
 
-O EF é o que torna o sistema adaptativo por card:
+| Review | Score | Reps | EF | Interval | Next |
+|--------|-------|------|----|----------|------|
+| 3rd | 2 | →0 | 2.18 | 1d | tomorrow |
+| 4th | 4 | 0→1 | 2.18 | 1d | tomorrow |
+| 5th | 4 | 1→2 | 2.18 | 6d | +6 days |
+| 6th | 4 | 2→3 | 2.18 | 13d | +13 days |
 
-- **EF alto (2.6+)**: card fácil → intervalos crescem rápido → revisão rara
-- **EF médio (2.5)**: card normal → crescimento padrão
-- **EF baixo (1.3-2.0)**: card difícil → intervalos crescem devagar → revisão frequente
+Note that the lower EF (2.18 vs 2.50) makes the intervals grow more slowly — the system learned that this card is harder.
 
-O EF mínimo de 1.3 garante que os intervalos eventualmente crescem mesmo para os cards mais difíceis, porém cards consistentemente respondidos de forma incorreta (quality < 3) continuarão resetando para 1 dia.
+## Ease Factor Effect
 
-## Implementação
+The EF is what makes the system adaptive per card:
 
-O algoritmo está em `src/open_cognition/services/sm2_service.py`:
+- **High EF (2.6+)**: easy card → intervals grow fast → rare review
+- **Medium EF (2.5)**: normal card → standard growth
+- **Low EF (1.3-2.0)**: hard card → intervals grow slowly → frequent review
+
+The minimum EF of 1.3 ensures that intervals eventually grow even for the hardest cards, but cards consistently answered incorrectly (quality < 3) will keep resetting to 1 day.
+
+## Implementation
+
+The algorithm is in `src/open_cognition/services/sm2_service.py`:
 
 ```python
 from datetime import datetime, timedelta, timezone
 
 def calculate_sm2(quality, repetitions, ease_factor, interval) -> SM2Result:
-    # Atualiza ease factor
+    # Update ease factor
     new_ef = ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
     new_ef = max(1.3, new_ef)
 
-    if quality >= 3:  # Acertou
+    if quality >= 3:  # Correct
         if repetitions == 0: new_interval = 1
         elif repetitions == 1: new_interval = 6
         else: new_interval = round(interval * new_ef)
         new_repetitions = repetitions + 1
-    else:  # Errou
+    else:  # Incorrect
         new_interval = 1
         new_repetitions = 0
 
@@ -142,7 +142,7 @@ def calculate_sm2(quality, repetitions, ease_factor, interval) -> SM2Result:
     return SM2Result(new_interval, new_ef, new_repetitions, due_date)
 ```
 
-## Referências
+## References
 
-- [SuperMemo 2 Algorithm](https://super-memory.com/english/ol/sm2.htm) — descrição original por Piotr Wozniak
-- [Anki Manual — Scheduling](https://docs.ankiweb.net/studying.html) — implementação similar no Anki
+- [SuperMemo 2 Algorithm](https://super-memory.com/english/ol/sm2.htm) — original description by Piotr Wozniak
+- [Anki Manual — Scheduling](https://docs.ankiweb.net/studying.html) — similar implementation in Anki
