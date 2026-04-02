@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader
 
 from open_cognition.config import get_templates_dir
 from open_cognition.models.doubt import DoubtCreate
@@ -18,7 +19,12 @@ from open_cognition.services import (
 
 router = APIRouter(tags=["frontend"])
 
-templates = Jinja2Templates(directory=get_templates_dir())
+_env = Environment(
+    loader=FileSystemLoader(get_templates_dir()),
+    autoescape=True,
+    cache_size=0,
+)
+templates = Jinja2Templates(env=_env)
 
 
 # --- Dashboard ---
