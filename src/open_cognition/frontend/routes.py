@@ -1,7 +1,7 @@
 import json
 
 from fastapi import APIRouter, Form, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import Environment, FileSystemLoader
 
@@ -27,6 +27,12 @@ _env = Environment(
 templates = Jinja2Templates(env=_env)
 
 
+def _render(request: Request, name: str, context: dict):
+    """Render template with kwargs for Starlette compatibility."""
+    context["request"] = request
+    return templates.TemplateResponse(name=name, context=context)
+
+
 # --- Dashboard ---
 
 
@@ -43,16 +49,12 @@ async def dashboard(request: Request):
 
     struggling = await review_service.get_struggling_cards(limit=20)
 
-    return templates.TemplateResponse(
-        "dashboard.html",
-        {
-            "request": request,
-            "due_count": len(due_cards),
-            "struggling_count": len(struggling),
-            "topics_with_due": topics_with_due,
-            "all_topics": all_topics,
-        },
-    )
+    return _render(request, "dashboard.html", {
+        "due_count": len(due_cards),
+        "struggling_count": len(struggling),
+        "topics_with_due": topics_with_due,
+        "all_topics": all_topics,
+    })
 
 
 # --- Topics ---
@@ -61,10 +63,7 @@ async def dashboard(request: Request):
 @router.get("/topics")
 async def topics_list(request: Request):
     topics = await topic_service.get_all_topics()
-    return templates.TemplateResponse(
-        "topics.html",
-        {"request": request, "topics": topics},
-    )
+    return _render(request, "topics.html", {"topics": topics})
 
 
 @router.post("/topics/create")
@@ -80,13 +79,9 @@ async def create_topic(
     if parent_id:
         await topic_service.add_subtopic(parent_id, topic.id)
 
-    # If HTMX request, return updated topics list partial
     if request.headers.get("HX-Request"):
         topics = await topic_service.get_all_topics()
-        return templates.TemplateResponse(
-            "partials/topics_list.html",
-            {"request": request, "topics": topics},
-        )
+        return _render(request, "partials/topics_list.html", {"topics": topics})
 
     return RedirectResponse("/topics", status_code=303)
 
@@ -99,26 +94,19 @@ async def topic_detail(request: Request, topic_id: str):
     resources = await resource_service.get_resources(topic_id)
     artifacts = await artifact_service.get_artifacts(topic_id)
 
-    return templates.TemplateResponse(
-        "topic_detail.html",
-        {
-            "request": request,
-            "topic": topic,
-            "flashcards": flashcards,
-            "due_cards": due_cards,
-            "resources": resources,
-            "artifacts": artifacts,
-        },
-    )
+    return _render(request, "topic_detail.html", {
+        "topic": topic,
+        "flashcards": flashcards,
+        "due_cards": due_cards,
+        "resources": resources,
+        "artifacts": artifacts,
+    })
 
 
 @router.get("/topics/{topic_id}/edit")
 async def topic_edit_form(request: Request, topic_id: str):
     topic = await topic_service.get_topic(topic_id)
-    return templates.TemplateResponse(
-        "topic_edit.html",
-        {"request": request, "topic": topic},
-    )
+    return _render(request, "topic_edit.html", {"topic": topic})
 
 
 @router.post("/topics/{topic_id}/edit")
@@ -147,15 +135,11 @@ async def resources_list(
 ):
     all_topics = await topic_service.get_all_topics()
     resources = await resource_service.get_resources(topic_id)
-    return templates.TemplateResponse(
-        "resources.html",
-        {
-            "request": request,
-            "resources": resources,
-            "all_topics": all_topics,
-            "selected_topic": topic_id or "",
-        },
-    )
+    return _render(request, "resources.html", {
+        "resources": resources,
+        "all_topics": all_topics,
+        "selected_topic": topic_id or "",
+    })
 
 
 # --- Artifacts ---
@@ -167,15 +151,11 @@ async def artifacts_list(
 ):
     all_topics = await topic_service.get_all_topics()
     artifacts = await artifact_service.get_artifacts_with_topics(topic_id)
-    return templates.TemplateResponse(
-        "artifacts.html",
-        {
-            "request": request,
-            "artifacts": artifacts,
-            "all_topics": all_topics,
-            "selected_topic": topic_id or "",
-        },
-    )
+    return _render(request, "artifacts.html", {
+        "artifacts": artifacts,
+        "all_topics": all_topics,
+        "selected_topic": topic_id or "",
+    })
 
 
 # --- Doubts ---
@@ -189,25 +169,18 @@ async def doubts_list(
 ):
     all_topics = await topic_service.get_all_topics()
     doubts = await doubt_service.get_doubts(topic_id, status)
-    return templates.TemplateResponse(
-        "doubts.html",
-        {
-            "request": request,
-            "doubts": doubts,
-            "all_topics": all_topics,
-            "selected_topic": topic_id or "",
-            "selected_status": status or "",
-        },
-    )
+    return _render(request, "doubts.html", {
+        "doubts": doubts,
+        "all_topics": all_topics,
+        "selected_topic": topic_id or "",
+        "selected_status": status or "",
+    })
 
 
 @router.get("/doubts/new")
 async def doubt_new_form(request: Request):
     all_topics = await topic_service.get_all_topics()
-    return templates.TemplateResponse(
-        "doubt_new.html",
-        {"request": request, "all_topics": all_topics},
-    )
+    return _render(request, "doubt_new.html", {"all_topics": all_topics})
 
 
 @router.post("/doubts/create")
@@ -232,10 +205,7 @@ async def doubt_resolve(doubt_id: str):
 @router.get("/struggling")
 async def struggling_cards(request: Request):
     cards = await review_service.get_struggling_cards(limit=20)
-    return templates.TemplateResponse(
-        "struggling.html",
-        {"request": request, "cards": cards},
-    )
+    return _render(request, "struggling.html", {"cards": cards})
 
 
 # --- Review ---
@@ -266,7 +236,6 @@ async def _render_review(request: Request, cards, topic):
     from surreal_basics import repo_query
 
     cards_data = []
-    # Cache artifacts per topic to avoid duplicate queries
     topic_artifacts_cache: dict[str, list] = {}
 
     for card in cards:
@@ -274,7 +243,6 @@ async def _render_review(request: Request, cards, topic):
         res = await resource_service.get_resources_for_flashcard(card.id)
         cd["resources"] = [r.model_dump() for r in res]
 
-        # Resolve card's topic IDs
         card_topic_ids = []
         if topic:
             card_topic_ids = [topic.id]
@@ -290,7 +258,6 @@ async def _render_review(request: Request, cards, topic):
 
         cd["topic_ids"] = card_topic_ids
 
-        # Collect artifacts for this card's topics
         card_artifacts = []
         seen_art_ids = set()
         for tid in card_topic_ids:
@@ -305,17 +272,10 @@ async def _render_review(request: Request, cards, topic):
 
         cards_data.append(cd)
 
-    # Initial artifacts for first card
-    initial_artifacts = cards_data[0]["artifacts"] if cards_data else []
-
-    return templates.TemplateResponse(
-        "review.html",
-        {
-            "request": request,
-            "topic": topic,
-            "cards": cards,
-            "cards_json": json.dumps(cards_data, default=str).replace("</", "<\\/"),
-            "total": len(cards),
-            "current": 0,
-        },
-    )
+    return _render(request, "review.html", {
+        "topic": topic,
+        "cards": cards,
+        "cards_json": json.dumps(cards_data, default=str).replace("</", "<\\/"),
+        "total": len(cards),
+        "current": 0,
+    })
