@@ -29,8 +29,7 @@ templates = Jinja2Templates(env=_env)
 
 def _render(request: Request, name: str, context: dict):
     """Render template with kwargs for Starlette compatibility."""
-    context["request"] = request
-    return templates.TemplateResponse(name=name, context=context)
+    return templates.TemplateResponse(request=request, name=name, context=context)
 
 
 # --- Dashboard ---
