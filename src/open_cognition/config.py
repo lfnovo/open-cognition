@@ -53,31 +53,33 @@ def get_connection_info() -> dict:
 
 def get_migrations_dir() -> str:
     """Get migrations directory — from package if installed, or local ./migrations."""
+    # Try to resolve from installed package location
     try:
-        from importlib.resources import files
+        import open_cognition
 
-        pkg_migrations = files("open_cognition") / "migrations"
-        if pkg_migrations.is_dir():
-            return str(pkg_migrations)
+        pkg_dir = Path(open_cognition.__file__).parent / "migrations"
+        if pkg_dir.is_dir():
+            return str(pkg_dir.resolve())
     except Exception:
         pass
 
     local = Path("./migrations")
     if local.is_dir():
-        return str(local)
+        return str(local.resolve())
 
     return str(OC_DATA_DIR / "migrations")
 
 
 def get_templates_dir() -> str:
     """Get templates directory — from package if installed, or local."""
+    # Try to resolve from installed package location
     try:
-        from importlib.resources import files
+        import open_cognition
 
-        pkg_templates = files("open_cognition") / "frontend" / "templates"
-        if pkg_templates.is_dir():
-            return str(pkg_templates)
+        pkg_dir = Path(open_cognition.__file__).parent / "frontend" / "templates"
+        if pkg_dir.is_dir():
+            return str(pkg_dir.resolve())
     except Exception:
         pass
 
-    return "src/open_cognition/frontend/templates"
+    return str(Path("src/open_cognition/frontend/templates").resolve())
