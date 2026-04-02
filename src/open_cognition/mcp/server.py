@@ -19,10 +19,11 @@ def run_mcp():
     from loguru import logger
     from surreal_basics.migrate import AsyncMigrationRunner
 
-    from open_cognition.config import ensure_data_dir, get_migrations_dir
+    from open_cognition.config import ensure_data_dir, get_migrations_dir, setup_surreal_defaults
 
     async def _run_migrations():
         ensure_data_dir()
+        setup_surreal_defaults()
         migrations_dir = get_migrations_dir()
         runner = AsyncMigrationRunner(migrations_dir)
         applied = await runner.run_up()

@@ -4,12 +4,13 @@ from fastapi import FastAPI
 from loguru import logger
 from surreal_basics.migrate import AsyncMigrationRunner
 
-from open_cognition.config import OC_HOST, OC_PORT, ensure_data_dir, get_migrations_dir
+from open_cognition.config import OC_HOST, OC_PORT, ensure_data_dir, get_migrations_dir, setup_surreal_defaults
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ensure_data_dir()
+    setup_surreal_defaults()
     migrations_dir = get_migrations_dir()
     logger.info(f"Using migrations from: {migrations_dir}")
     runner = AsyncMigrationRunner(migrations_dir)
