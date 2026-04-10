@@ -188,6 +188,71 @@ Wait for confirmation. Only then call `create_flashcards_batch`.
 
 ## Usage Flows
 
+### Flow 0: Setup Assistant
+
+**Trigger**: The user tries to use any open-cognition feature (study, flashcards, review, etc.) but the MCP tools listed in this skill are not available in your current tool list.
+
+When you detect that the open-cognition MCP tools (e.g., `get_topics`, `create_topic`, `start_session`) are **not available**, do not attempt to use them. Instead, switch to setup assistant mode and guide the user through installation.
+
+**Protocol**:
+
+1. **Acknowledge the situation clearly**:
+   > "It looks like open-cognition isn't set up yet — the study tools aren't available. Let me help you get it running. It only takes a couple of minutes."
+
+2. **Check if `uv` is installed**:
+   Ask the user to run this in their terminal:
+   ```bash
+   uv --version
+   ```
+   - If installed: confirm and move on
+   - If not installed: guide them:
+     ```bash
+     # macOS / Linux
+     curl -LsSf https://astral.sh/uv/install.sh | sh
+
+     # Windows
+     powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+     ```
+     After install, ask them to restart their terminal and verify with `uv --version`.
+
+3. **Configure the MCP server in Claude Desktop**:
+   Ask the user to open their Claude Desktop configuration file:
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+   Then add the open-cognition MCP server. Provide the exact JSON to add:
+   ```json
+   {
+     "mcpServers": {
+       "open-cognition": {
+         "command": "uvx",
+         "args": ["open-cognition", "mcp"]
+       }
+     }
+   }
+   ```
+   **Important**: If the user already has other MCP servers configured, instruct them to add the `"open-cognition"` entry inside their existing `"mcpServers"` object — not replace the whole file.
+
+4. **Restart Claude Desktop**:
+   > "Now quit Claude Desktop completely and reopen it. This is needed for the new MCP server to load."
+
+5. **Verify the setup**:
+   After restart, ask the user to come back and say something like "let's study" or "show me my topics". If the tools are now available, confirm success:
+   > "All set! open-cognition is connected. Your data is stored locally in `~/.open-cognition` — no external database needed. Let's get started."
+
+   If tools are still not available, troubleshoot:
+   - Ask the user to check for errors in Claude Desktop's MCP logs
+   - Verify `uvx open-cognition mcp` runs without errors in their terminal
+   - Confirm the JSON syntax is correct (common issue: trailing commas)
+
+**What NOT to do in setup mode**:
+- Don't overwhelm with technical details — keep it step by step
+- Don't mention SurrealDB or database configuration — the embedded DB works out of the box
+- Don't skip the restart step — it's required
+- Don't try to call MCP tools that aren't available
+
+---
+
 ### Flow 1: Start a Study Session
 
 **Trigger**: User says something like "let's start a session on X", "I want to study X", "let's talk about X"
